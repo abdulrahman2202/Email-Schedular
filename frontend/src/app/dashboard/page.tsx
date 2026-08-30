@@ -72,7 +72,12 @@ export default function DashboardPage() {
   if (!user) return null;
 
   if (showCompose) {
-    return <ComposePage onBack={() => setShowCompose(false)} onScheduled={handleScheduled} />;
+    return (
+      <>
+        <ComposePage onBack={() => setShowCompose(false)} onScheduled={handleScheduled} />
+        <Toast />
+      </>
+    );
   }
 
   const isSearching = searchQuery.trim().length > 0;
