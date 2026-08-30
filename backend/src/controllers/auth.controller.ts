@@ -42,7 +42,15 @@ export async function googleCallback(req: Request, res: Response): Promise<void>
 
     res.redirect(`${FRONTEND_URL}/dashboard`);
   } catch (error) {
-    console.error("Google callback error:", error);
+    // Diagnostic: log Prisma error code/message only (no tokens, cookies, or secrets)
+    if (error && typeof error === "object" && "code" in error) {
+      const prismaErr = error as { code: string; message: string; meta?: unknown };
+      console.error(
+        `[AuthCallback] Prisma error — code: ${prismaErr.code}, message: ${prismaErr.message}, meta: ${JSON.stringify(prismaErr.meta ?? null)}`
+      );
+    } else {
+      console.error("Google callback error:", error);
+    }
     res.redirect(`${FRONTEND_URL}/login?error=auth_failed`);
   }
 }
