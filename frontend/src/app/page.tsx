@@ -1,9 +1,18 @@
-import Image from "next/image";
+"use client";
+
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function Home() {
-  return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      hello world
-    </div>
-  );
+  const router = useRouter();
+  const [checked, setChecked] = useState(false);
+
+  useEffect(() => {
+    // For now, always go to dashboard. When auth is implemented, check session here.
+    router.replace("/dashboard");
+    setChecked(true);
+  }, [router]);
+
+  if (!checked) return null;
+  return null;
 }
