@@ -1,6 +1,7 @@
 import { Request, Response, Router } from "express";
 import { z } from "zod";
 import { prisma } from "../config/prisma";
+import { authenticate } from "../middleware/auth.middleware";
 
 const router = Router();
 
@@ -10,9 +11,9 @@ const createSenderSchema = z.object({
   smtpPassword: z.string().trim().min(1, "smtpPassword is required"),
 });
 
-router.get("/api/senders", async (_req: Request, res: Response) => {
+router.get("/api/senders", authenticate, async (req: Request, res: Response) => {
   try {
-    const userId = "dev-user-id";
+    const userId = req.user!.userId;
     const senders = await prisma.sender.findMany({
       where: { userId },
       select: {
@@ -34,7 +35,7 @@ router.get("/api/senders", async (_req: Request, res: Response) => {
   }
 });
 
-router.post("/api/senders", async (req: Request, res: Response) => {
+router.post("/api/senders", authenticate, async (req: Request, res: Response) => {
   try {
     const parsed = createSenderSchema.safeParse(req.body);
     if (!parsed.success) {
@@ -46,18 +47,7 @@ router.post("/api/senders", async (req: Request, res: Response) => {
       return;
     }
 
-    const userId = "dev-user-id";
-
-    await prisma.user.upsert({
-      where: { id: userId },
-      create: {
-        id: userId,
-        googleId: "dev-google-id",
-        name: "Dev User",
-        email: "dev@reachinbox.local",
-      },
-      update: {},
-    });
+    const userId = req.user!.userId;
 
     const sender = await prisma.sender.create({
       data: {

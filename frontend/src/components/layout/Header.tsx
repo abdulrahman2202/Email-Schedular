@@ -1,15 +1,16 @@
 "use client";
 
-import { Search, Filter, RefreshCw } from "lucide-react";
+import { Search, Filter, RefreshCw, LogOut } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 
 interface HeaderProps {
   searchQuery: string;
   onSearchChange: (q: string) => void;
   onRefresh: () => void;
+  onLogout?: () => void;
 }
 
-export default function Header({ searchQuery, onSearchChange, onRefresh }: HeaderProps) {
+export default function Header({ searchQuery, onSearchChange, onRefresh, onLogout }: HeaderProps) {
   const [local, setLocal] = useState(searchQuery);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -45,6 +46,15 @@ export default function Header({ searchQuery, onSearchChange, onRefresh }: Heade
         >
           <RefreshCw size={16} />
         </button>
+        {onLogout && (
+          <button
+            onClick={onLogout}
+            className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-lg transition-colors cursor-pointer"
+            title="Logout"
+          >
+            <LogOut size={16} />
+          </button>
+        )}
       </div>
     </header>
   );

@@ -6,7 +6,7 @@ import type {
   SearchResponse,
 } from "@/types/email";
 import type { SenderListResponse, CreateSenderRequest, CreateSenderResponse } from "@/types/sender";
-import type { SlackStatus } from "@/types/user";
+import type { SlackStatus, User } from "@/types/user";
 
 const API_BASE = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000").replace(/\/+$/, "");
 
@@ -14,6 +14,20 @@ const api = axios.create({
   baseURL: API_BASE,
   withCredentials: true,
 });
+
+// Auth
+export function getGoogleLoginUrl(): string {
+  return `${API_BASE}/api/auth/google`;
+}
+
+export async function getMe(): Promise<User> {
+  const { data } = await api.get<User>("/api/auth/me");
+  return data;
+}
+
+export async function logout(): Promise<void> {
+  await api.post("/api/auth/logout");
+}
 
 export async function getHealth() {
   const { data } = await api.get<{ status: string; database: string }>("/health");

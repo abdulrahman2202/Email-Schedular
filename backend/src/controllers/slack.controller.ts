@@ -7,8 +7,6 @@ import {
   disconnectSlack,
 } from "../services/slack.service";
 
-const DEV_USER_ID = "dev-user-id";
-
 export function slackConnect(_req: Request, res: Response) {
   const url = getSlackAuthUrl();
   res.redirect(url);
@@ -23,7 +21,7 @@ export async function slackCallback(req: Request, res: Response) {
     }
 
     const { accessToken, teamId } = await exchangeSlackCode(code);
-    await saveSlackConnection(DEV_USER_ID, accessToken, teamId);
+    await saveSlackConnection("slack-bot-user", accessToken, teamId);
 
     res.json({ success: true, message: "Slack connected successfully", teamId });
   } catch (error) {
@@ -35,9 +33,10 @@ export async function slackCallback(req: Request, res: Response) {
   }
 }
 
-export async function slackStatus(_req: Request, res: Response) {
+export async function slackStatus(req: Request, res: Response) {
   try {
-    const status = await getSlackStatus(DEV_USER_ID);
+    const userId = req.user!.userId;
+    const status = await getSlackStatus(userId);
     res.json({ success: true, ...status });
   } catch (error) {
     console.error("[SlackController] Status error:", error);
@@ -48,9 +47,10 @@ export async function slackStatus(_req: Request, res: Response) {
   }
 }
 
-export async function slackDisconnect(_req: Request, res: Response) {
+export async function slackDisconnect(req: Request, res: Response) {
   try {
-    await disconnectSlack(DEV_USER_ID);
+    const userId = req.user!.userId;
+    await disconnectSlack(userId);
     res.json({ success: true, message: "Slack disconnected" });
   } catch (error) {
     console.error("[SlackController] Disconnect error:", error);

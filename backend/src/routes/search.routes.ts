@@ -1,9 +1,10 @@
 import { Request, Response, Router } from "express";
 import { searchEmails } from "../services/search.service";
+import { authenticate } from "../middleware/auth.middleware";
 
 const router = Router();
 
-router.get("/api/emails/search", async (req: Request, res: Response) => {
+router.get("/api/emails/search", authenticate, async (req: Request, res: Response) => {
   try {
     const q = req.query.q as string | undefined;
     if (!q || q.trim().length === 0) {

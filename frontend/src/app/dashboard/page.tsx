@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Sidebar from "@/components/layout/Sidebar";
 import Header from "@/components/layout/Header";
 import EmailTable from "@/components/emails/EmailTable";
@@ -8,11 +9,25 @@ import ComposePage from "@/components/emails/ComposePage";
 import SlackConnection from "@/components/slack/SlackConnection";
 import Toast from "@/components/ui/Toast";
 import { useScheduledEmails, useSentEmails, useSearchEmails } from "@/hooks/useEmails";
+import { getMe, logout } from "@/services/api";
+import type { User } from "@/types/user";
 
 export default function DashboardPage() {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState<"scheduled" | "sent">("scheduled");
   const [showCompose, setShowCompose] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [user, setUser] = useState<User | null>(null);
+  const [authLoading, setAuthLoading] = useState(true);
+
+  useEffect(() => {
+    getMe()
+      .then(setUser)
+      .catch(() => {
+        router.replace("/login");
+      })
+      .finally(() => setAuthLoading(false));
+  }, [router]);
 
   const scheduled = useScheduledEmails();
   const sent = useSentEmails();
@@ -41,6 +56,21 @@ export default function DashboardPage() {
     sent.refresh();
   }, [scheduled, sent]);
 
+  const handleLogout = useCallback(async () => {
+    await logout();
+    router.replace("/login");
+  }, [router]);
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-sm text-gray-400">Loading...</div>
+      </div>
+    );
+  }
+
+  if (!user) return null;
+
   if (showCompose) {
     return <ComposePage onBack={() => setShowCompose(false)} onScheduled={handleScheduled} />;
   }
@@ -62,9 +92,9 @@ export default function DashboardPage() {
         onCompose={() => setShowCompose(true)}
         scheduledCount={scheduled.emails.length}
         sentCount={sent.emails.length}
-        userName="Oliver Brown"
-        userEmail="oliver.brown@domain.io"
-        userAvatar={null}
+        userName={user.name}
+        userEmail={user.email}
+        userAvatar={user.avatar}
       />
 
       <div className="flex-1 flex flex-col min-w-0">
@@ -72,6 +102,7 @@ export default function DashboardPage() {
           searchQuery={searchQuery}
           onSearchChange={handleSearch}
           onRefresh={handleRefresh}
+          onLogout={handleLogout}
         />
 
         <main className="flex-1">

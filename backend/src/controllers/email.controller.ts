@@ -29,20 +29,8 @@ export async function scheduleEmailsController(req: Request, res: Response) {
     const minDelay = Number(process.env.MIN_SEND_DELAY_MS) || 2000;
     const effectiveDelay = Math.max(delayBetweenEmails, minDelay);
 
-    // Use a hardcoded dev user for now
-    const userId = "dev-user-id";
-
-    // Ensure dev user exists
-    await prisma.user.upsert({
-      where: { id: userId },
-      create: {
-        id: userId,
-        googleId: "dev-google-id",
-        name: "Dev User",
-        email: "dev@reachinbox.local",
-      },
-      update: {},
-    });
+    // Use authenticated user
+    const userId = req.user!.userId;
 
     // Verify sender exists and belongs to user
     const sender = await prisma.sender.findFirst({
@@ -81,10 +69,11 @@ export async function scheduleEmailsController(req: Request, res: Response) {
   }
 }
 
-export async function getScheduledEmails(_req: Request, res: Response) {
+export async function getScheduledEmails(req: Request, res: Response) {
   try {
+    const userId = req.user!.userId;
     const emails = await prisma.email.findMany({
-      where: { status: "scheduled" },
+      where: { status: "scheduled", userId },
       orderBy: { scheduledAt: "asc" },
     });
 
@@ -98,10 +87,11 @@ export async function getScheduledEmails(_req: Request, res: Response) {
   }
 }
 
-export async function getSentEmails(_req: Request, res: Response) {
+export async function getSentEmails(req: Request, res: Response) {
   try {
+    const userId = req.user!.userId;
     const emails = await prisma.email.findMany({
-      where: { status: "sent" },
+      where: { status: "sent", userId },
       orderBy: { sentAt: "desc" },
     });
 
