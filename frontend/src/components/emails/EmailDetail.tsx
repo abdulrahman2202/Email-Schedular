@@ -2,7 +2,8 @@
 
 import { ArrowLeft, Star, Trash2, Archive } from "lucide-react";
 import { useState, useEffect } from "react";
-import { getEmailById } from "@/services/api";
+import { getEmailById, deleteEmail } from "@/services/api";
+import { showToast } from "@/components/ui/Toast";
 import type { Email } from "@/types/email";
 
 function formatFullDate(iso: string) {
@@ -20,12 +21,15 @@ function formatFullDate(iso: string) {
 interface EmailDetailProps {
   emailId: string;
   onBack: () => void;
+  onDelete?: () => void;
 }
 
-export default function EmailDetail({ emailId, onBack }: EmailDetailProps) {
+export default function EmailDetail({ emailId, onBack, onDelete }: EmailDetailProps) {
   const [email, setEmail] = useState<Email | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     setLoading(true);
@@ -35,6 +39,21 @@ export default function EmailDetail({ emailId, onBack }: EmailDetailProps) {
       .catch((err) => setError(err instanceof Error ? err.message : "Failed to load email"))
       .finally(() => setLoading(false));
   }, [emailId]);
+
+  const handleDelete = async () => {
+    setDeleting(true);
+    try {
+      await deleteEmail(emailId);
+      showToast("success", "Email deleted successfully");
+      setShowConfirm(false);
+      onDelete?.();
+      onBack();
+    } catch {
+      showToast("error", "Failed to delete email. Please try again.");
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -79,7 +98,10 @@ export default function EmailDetail({ emailId, onBack }: EmailDetailProps) {
           <button className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-lg transition-colors cursor-pointer">
             <Archive size={18} />
           </button>
-          <button className="p-2 text-gray-400 hover:text-red-500 hover:bg-gray-50 rounded-lg transition-colors cursor-pointer">
+          <button
+            onClick={() => setShowConfirm(true)}
+            className="p-2 text-gray-400 hover:text-red-500 hover:bg-gray-50 rounded-lg transition-colors cursor-pointer"
+          >
             <Trash2 size={18} />
           </button>
         </div>
@@ -124,6 +146,34 @@ export default function EmailDetail({ emailId, onBack }: EmailDetailProps) {
           )}
         </div>
       </div>
+
+      {/* Delete confirmation dialog */}
+      {showConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-sm mx-4 p-6">
+            <h2 className="text-base font-semibold text-gray-900 mb-2">Delete this email?</h2>
+            <p className="text-sm text-gray-500 mb-6">
+              This action cannot be undone. The email will be permanently removed.
+            </p>
+            <div className="flex items-center justify-end gap-3">
+              <button
+                onClick={() => setShowConfirm(false)}
+                disabled={deleting}
+                className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 rounded-lg transition-colors cursor-pointer disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDelete}
+                disabled={deleting}
+                className="px-4 py-2 text-sm font-medium text-white bg-red-500 hover:bg-red-600 rounded-lg transition-colors cursor-pointer disabled:opacity-50"
+              >
+                {deleting ? "Deleting..." : "Delete"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

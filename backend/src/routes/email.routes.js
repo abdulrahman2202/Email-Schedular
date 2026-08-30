@@ -26,6 +26,7 @@ router.get("/api/emails/search", auth_middleware_1.authenticate, async (req, res
         });
     }
 });
+router.delete("/api/emails/:id", auth_middleware_1.authenticate, email_controller_1.deleteEmail);
 router.get("/api/emails/:id", auth_middleware_1.authenticate, email_controller_1.getEmailById);
 exports.default = router;
 //# sourceMappingURL=email.routes.js.map

@@ -61,6 +61,11 @@ export async function getEmailById(id: string): Promise<EmailDetailResponse> {
   return data;
 }
 
+export async function deleteEmail(id: string): Promise<{ success: boolean; message: string }> {
+  const { data } = await api.delete<{ success: boolean; message: string }>(`/api/emails/${id}`);
+  return data;
+}
+
 // Senders
 export async function getSenders(): Promise<SenderListResponse> {
   const { data } = await api.get<SenderListResponse>("/api/senders");

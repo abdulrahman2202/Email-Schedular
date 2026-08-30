@@ -4,9 +4,11 @@ exports.scheduleEmailsController = scheduleEmailsController;
 exports.getScheduledEmails = getScheduledEmails;
 exports.getSentEmails = getSentEmails;
 exports.getEmailById = getEmailById;
+exports.deleteEmail = deleteEmail;
 const zod_1 = require("zod");
 const prisma_1 = require("../config/prisma");
 const email_service_1 = require("../services/email.service");
+const email_queue_1 = require("../queues/email.queue");
 const scheduleSchema = zod_1.z.object({
     senderId: zod_1.z.string().trim().min(1, "senderId is required"),
     subject: zod_1.z.string().trim().min(1, "subject is required"),
@@ -116,6 +118,39 @@ async function getEmailById(req, res) {
     }
     catch (error) {
         console.error("[EmailController] Get email by id error:", error);
+        res.status(500).json({
+            success: false,
+            message: error instanceof Error ? error.message : "Internal server error",
+        });
+    }
+}
+async function deleteEmail(req, res) {
+    try {
+        const userId = req.user.userId;
+        const { id } = req.params;
+        const email = await prisma_1.prisma.email.findFirst({
+            where: { id, userId },
+        });
+        if (!email) {
+            res.status(404).json({ success: false, message: "Email not found" });
+            return;
+        }
+        // Cancel the BullMQ job if scheduled (still delayed/waiting)
+        if (email.status === "scheduled") {
+            try {
+                const jobId = `email-${email.id}`;
+                await email_queue_1.emailQueue.remove(jobId);
+            }
+            catch (e) {
+                // Job may already be completed or not found — that's fine
+                console.log("[EmailController] Could not cancel BullMQ job (may already be processed):", e.message);
+            }
+        }
+        await prisma_1.prisma.email.delete({ where: { id } });
+        res.json({ success: true, message: "Email deleted successfully" });
+    }
+    catch (error) {
+        console.error("[EmailController] Delete email error:", error);
         res.status(500).json({
             success: false,
             message: error instanceof Error ? error.message : "Internal server error",

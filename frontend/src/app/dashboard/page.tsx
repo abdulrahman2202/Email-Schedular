@@ -71,6 +71,13 @@ export default function DashboardPage() {
     setSelectedEmail(null);
   }, []);
 
+  const handleDeleteFromDetail = useCallback(() => {
+    setSelectedEmail(null);
+    scheduled.refresh();
+    sent.refresh();
+    if (searchQuery.trim()) search.search(searchQuery);
+  }, [scheduled, sent, search, searchQuery]);
+
   if (authLoading) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
@@ -93,7 +100,7 @@ export default function DashboardPage() {
   if (selectedEmail) {
     return (
       <>
-        <EmailDetail emailId={selectedEmail.id} onBack={handleBackFromDetail} />
+        <EmailDetail emailId={selectedEmail.id} onBack={handleBackFromDetail} onDelete={handleDeleteFromDetail} />
         <Toast />
       </>
     );

@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { z } from "zod";
 import { prisma } from "../config/prisma";
 import { scheduleEmails } from "../services/email.service";
+import { emailQueue } from "../queues/email.queue";
 
 const scheduleSchema = z.object({
   senderId: z.string().trim().min(1, "senderId is required"),
@@ -123,6 +124,43 @@ export async function getEmailById(req: Request<{ id: string }>, res: Response) 
     res.json({ success: true, email });
   } catch (error) {
     console.error("[EmailController] Get email by id error:", error);
+    res.status(500).json({
+      success: false,
+      message: error instanceof Error ? error.message : "Internal server error",
+    });
+  }
+}
+
+export async function deleteEmail(req: Request<{ id: string }>, res: Response) {
+  try {
+    const userId = req.user!.userId;
+    const { id } = req.params;
+
+    const email = await prisma.email.findFirst({
+      where: { id, userId },
+    });
+
+    if (!email) {
+      res.status(404).json({ success: false, message: "Email not found" });
+      return;
+    }
+
+    // Cancel the BullMQ job if scheduled (still delayed/waiting)
+    if (email.status === "scheduled") {
+      try {
+        const jobId = `email-${email.id}`;
+        await emailQueue.remove(jobId);
+      } catch (e) {
+        // Job may already be completed or not found — that's fine
+        console.log("[EmailController] Could not cancel BullMQ job (may already be processed):", (e as Error).message);
+      }
+    }
+
+    await prisma.email.delete({ where: { id } });
+
+    res.json({ success: true, message: "Email deleted successfully" });
+  } catch (error) {
+    console.error("[EmailController] Delete email error:", error);
     res.status(500).json({
       success: false,
       message: error instanceof Error ? error.message : "Internal server error",

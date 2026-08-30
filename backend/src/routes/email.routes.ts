@@ -5,6 +5,7 @@ import {
   getScheduledEmails,
   getSentEmails,
   getEmailById,
+  deleteEmail,
 } from "../controllers/email.controller";
 import { searchEmails } from "../services/search.service";
 import { authenticate } from "../middleware/auth.middleware";
@@ -34,6 +35,7 @@ router.get("/api/emails/search", authenticate, async (req: Request, res: Respons
   }
 });
 
+router.delete("/api/emails/:id", authenticate, deleteEmail);
 router.get("/api/emails/:id", authenticate, getEmailById);
 
 export default router;
