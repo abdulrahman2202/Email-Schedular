@@ -20,6 +20,7 @@ export function authenticate(req: Request, res: Response, next: NextFunction): v
   const token = req.cookies?.token;
 
   if (!token) {
+    console.log("[Auth] No token found — cookies:", JSON.stringify(Object.keys(req.cookies ?? {})));
     res.status(401).json({ error: "Authentication required" });
     return;
   }
@@ -28,7 +29,8 @@ export function authenticate(req: Request, res: Response, next: NextFunction): v
     const decoded = jwt.verify(token, JWT_SECRET) as AuthUser;
     req.user = decoded;
     next();
-  } catch {
+  } catch (err) {
+    console.log("[Auth] Invalid token:", (err as Error).message);
     res.status(401).json({ error: "Invalid or expired token" });
   }
 }

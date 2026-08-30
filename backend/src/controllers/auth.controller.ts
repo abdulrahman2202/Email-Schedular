@@ -43,7 +43,10 @@ export async function googleCallback(req: Request, res: Response): Promise<void>
     const user = await findOrCreateUser(googleUser);
     const token = createJwtToken(user);
 
-    res.cookie("token", token, cookieOptions(7 * 24 * 60 * 60 * 1000));
+    const opts = cookieOptions(7 * 24 * 60 * 60 * 1000);
+    console.log("[AuthCallback] Cookie options:", JSON.stringify(opts), "NODE_ENV:", process.env.NODE_ENV, "IS_PROD:", IS_PROD);
+
+    res.cookie("token", token, opts);
 
     res.redirect(`${FRONTEND_URL}/dashboard`);
   } catch (error) {
