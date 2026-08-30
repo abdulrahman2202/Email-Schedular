@@ -1,5 +1,6 @@
 import { prisma } from "../config/prisma";
 import { emailQueue } from "../queues/email.queue";
+import { indexEmail } from "./search.service";
 
 interface ScheduleEmailsInput {
   userId: string;
@@ -46,6 +47,22 @@ export async function scheduleEmails(input: ScheduleEmailsInput) {
     }
     return created;
   });
+
+  // Index emails in Elasticsearch (non-fatal)
+  for (const email of emails) {
+    await indexEmail({
+      id: email.id,
+      userId: email.userId,
+      senderId: email.senderId,
+      recipient: email.recipient,
+      subject: email.subject,
+      body: email.body,
+      status: email.status,
+      scheduledAt: email.scheduledAt.toISOString(),
+      sentAt: email.sentAt?.toISOString() ?? null,
+      createdAt: email.createdAt.toISOString(),
+    });
+  }
 
   return emails;
 }
