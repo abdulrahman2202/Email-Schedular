@@ -8,6 +8,16 @@ import {
 } from "../services/auth.service";
 
 const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:3000";
+const IS_PROD = process.env.NODE_ENV === "production";
+
+function cookieOptions(maxAgeMs?: number): Record<string, unknown> {
+  return {
+    httpOnly: true,
+    secure: IS_PROD,
+    sameSite: IS_PROD ? ("none" as const) : ("lax" as const),
+    ...(maxAgeMs !== undefined ? { maxAge: maxAgeMs } : {}),
+  };
+}
 
 export async function googleAuth(_req: Request, res: Response): Promise<void> {
   try {
@@ -33,12 +43,7 @@ export async function googleCallback(req: Request, res: Response): Promise<void>
     const user = await findOrCreateUser(googleUser);
     const token = createJwtToken(user);
 
-    res.cookie("token", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-    });
+    res.cookie("token", token, cookieOptions(7 * 24 * 60 * 60 * 1000));
 
     res.redirect(`${FRONTEND_URL}/dashboard`);
   } catch (error) {
@@ -81,10 +86,6 @@ export async function getMe(req: Request, res: Response): Promise<void> {
 }
 
 export async function logout(_req: Request, res: Response): Promise<void> {
-  res.clearCookie("token", {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-  });
+  res.clearCookie("token", cookieOptions());
   res.json({ success: true, message: "Logged out successfully" });
 }
