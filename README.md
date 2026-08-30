@@ -519,7 +519,7 @@ The system uses **Ethereal** (ethereal.email) as the SMTP provider for test emai
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/your-username/Email-Schedular.git
+git clone https://github.com/abdulrahman2202/Email-Schedular.git
 cd Email-Schedular
 ```
 
