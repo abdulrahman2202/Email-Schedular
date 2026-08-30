@@ -1,6 +1,7 @@
 import axios from "axios";
 import type {
   EmailListResponse,
+  EmailDetailResponse,
   ScheduleEmailRequest,
   ScheduleEmailResponse,
   SearchResponse,
@@ -52,6 +53,11 @@ export async function scheduleEmails(req: ScheduleEmailRequest): Promise<Schedul
 
 export async function searchEmails(query: string): Promise<SearchResponse> {
   const { data } = await api.get<SearchResponse>("/api/emails/search", { params: { q: query } });
+  return data;
+}
+
+export async function getEmailById(id: string): Promise<EmailDetailResponse> {
+  const { data } = await api.get<EmailDetailResponse>(`/api/emails/${id}`);
   return data;
 }
 

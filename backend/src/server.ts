@@ -6,7 +6,6 @@ import healthRoutes from "./routes/health.routes";
 import emailRoutes from "./routes/email.routes";
 import senderRoutes from "./routes/sender.routes";
 import slackRoutes from "./routes/slack.routes";
-import searchRoutes from "./routes/search.routes";
 import adminRoutes from "./routes/admin.routes";
 import authRoutes from "./routes/auth.routes";
 import { prisma } from "./config/prisma";
@@ -32,7 +31,6 @@ app.use(healthRoutes);
 app.use(emailRoutes);
 app.use(senderRoutes);
 app.use(slackRoutes);
-app.use(searchRoutes);
 app.use(adminRoutes);
 
 const PORT = process.env.PORT || 5000;

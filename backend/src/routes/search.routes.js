@@ -11,7 +11,7 @@ router.get("/api/emails/search", auth_middleware_1.authenticate, async (req, res
             res.status(400).json({ success: false, message: "Query parameter 'q' is required" });
             return;
         }
-        const emails = await (0, search_service_1.searchEmails)(q);
+        const emails = await (0, search_service_1.searchEmails)(q, req.user.userId);
         res.json({ success: true, query: q, emails });
     }
     catch (error) {

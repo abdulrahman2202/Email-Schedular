@@ -104,3 +104,28 @@ export async function getSentEmails(req: Request, res: Response) {
     });
   }
 }
+
+export async function getEmailById(req: Request<{ id: string }>, res: Response) {
+  try {
+    const userId = req.user!.userId;
+    const { id } = req.params;
+
+    const email = await prisma.email.findFirst({
+      where: { id, userId },
+      include: { sender: { select: { id: true, email: true, smtpUser: true } } },
+    });
+
+    if (!email) {
+      res.status(404).json({ success: false, message: "Email not found" });
+      return;
+    }
+
+    res.json({ success: true, email });
+  } catch (error) {
+    console.error("[EmailController] Get email by id error:", error);
+    res.status(500).json({
+      success: false,
+      message: error instanceof Error ? error.message : "Internal server error",
+    });
+  }
+}

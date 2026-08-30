@@ -11,7 +11,6 @@ const health_routes_1 = __importDefault(require("./routes/health.routes"));
 const email_routes_1 = __importDefault(require("./routes/email.routes"));
 const sender_routes_1 = __importDefault(require("./routes/sender.routes"));
 const slack_routes_1 = __importDefault(require("./routes/slack.routes"));
-const search_routes_1 = __importDefault(require("./routes/search.routes"));
 const admin_routes_1 = __importDefault(require("./routes/admin.routes"));
 const auth_routes_1 = __importDefault(require("./routes/auth.routes"));
 const prisma_1 = require("./config/prisma");
@@ -32,7 +31,6 @@ app.use(health_routes_1.default);
 app.use(email_routes_1.default);
 app.use(sender_routes_1.default);
 app.use(slack_routes_1.default);
-app.use(search_routes_1.default);
 app.use(admin_routes_1.default);
 const PORT = process.env.PORT || 5000;
 const server = app.listen(PORT, async () => {

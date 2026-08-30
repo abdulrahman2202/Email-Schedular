@@ -13,7 +13,7 @@ interface EmailDocument {
 export declare function ensureIndex(): Promise<void>;
 export declare function indexEmail(doc: EmailDocument): Promise<void>;
 export declare function updateEmailStatus(emailId: string, status: string, sentAt: string | null, messageId: string | null): Promise<void>;
-export declare function searchEmails(query: string): Promise<{
+export declare function searchEmails(query: string, userId: string): Promise<{
     id: string | undefined;
 }[]>;
 export {};

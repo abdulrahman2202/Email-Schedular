@@ -82,14 +82,21 @@ export async function updateEmailStatus(
   }
 }
 
-export async function searchEmails(query: string) {
+export async function searchEmails(query: string, userId: string) {
   try {
     const result = await client.search({
       index: INDEX_NAME,
       query: {
-        multi_match: {
-          query,
-          fields: ["recipient", "subject", "body"],
+        bool: {
+          must: [
+            {
+              multi_match: {
+                query,
+                fields: ["recipient", "subject", "body"],
+              },
+            },
+          ],
+          filter: [{ term: { userId } }],
         },
       },
     });

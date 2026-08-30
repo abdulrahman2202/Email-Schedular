@@ -5,12 +5,13 @@ import { useRouter } from "next/navigation";
 import Sidebar from "@/components/layout/Sidebar";
 import Header from "@/components/layout/Header";
 import EmailTable from "@/components/emails/EmailTable";
+import EmailDetail from "@/components/emails/EmailDetail";
 import ComposePage from "@/components/emails/ComposePage";
-import SlackConnection from "@/components/slack/SlackConnection";
 import Toast from "@/components/ui/Toast";
 import { useScheduledEmails, useSentEmails, useSearchEmails } from "@/hooks/useEmails";
 import { getMe, logout } from "@/services/api";
 import type { User } from "@/types/user";
+import type { Email } from "@/types/email";
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -19,6 +20,7 @@ export default function DashboardPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [user, setUser] = useState<User | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
+  const [selectedEmail, setSelectedEmail] = useState<Email | null>(null);
 
   useEffect(() => {
     getMe()
@@ -61,6 +63,14 @@ export default function DashboardPage() {
     router.replace("/login");
   }, [router]);
 
+  const handleEmailClick = useCallback((email: Email) => {
+    setSelectedEmail(email);
+  }, []);
+
+  const handleBackFromDetail = useCallback(() => {
+    setSelectedEmail(null);
+  }, []);
+
   if (authLoading) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
@@ -80,10 +90,20 @@ export default function DashboardPage() {
     );
   }
 
+  if (selectedEmail) {
+    return (
+      <>
+        <EmailDetail emailId={selectedEmail.id} onBack={handleBackFromDetail} />
+        <Toast />
+      </>
+    );
+  }
+
   const isSearching = searchQuery.trim().length > 0;
   const displayEmails = isSearching ? search.emails : activeTab === "scheduled" ? scheduled.emails : sent.emails;
   const displayLoading = isSearching ? search.loading : activeTab === "scheduled" ? scheduled.loading : sent.loading;
   const displayError = isSearching ? search.error : activeTab === "scheduled" ? scheduled.error : sent.error;
+  const displayType = isSearching ? "sent" : activeTab;
 
   return (
     <div className="min-h-screen bg-white flex">
@@ -95,6 +115,7 @@ export default function DashboardPage() {
           search.clear();
         }}
         onCompose={() => setShowCompose(true)}
+        onLogout={handleLogout}
         scheduledCount={scheduled.emails.length}
         sentCount={sent.emails.length}
         userName={user.name}
@@ -107,27 +128,23 @@ export default function DashboardPage() {
           searchQuery={searchQuery}
           onSearchChange={handleSearch}
           onRefresh={handleRefresh}
-          onLogout={handleLogout}
         />
 
         <main className="flex-1">
-          {isSearching ? (
-            <div>
-              <div className="px-6 py-3 border-b border-gray-50">
-                <p className="text-sm text-gray-500">
-                  Search results for &quot;{searchQuery}&quot;
-                </p>
-              </div>
-              <EmailTable emails={displayEmails} loading={displayLoading} error={displayError} type="sent" />
+          {isSearching && (
+            <div className="px-6 py-3 border-b border-gray-50">
+              <p className="text-sm text-gray-500">
+                Search results for &quot;{searchQuery}&quot;
+              </p>
             </div>
-          ) : (
-            <EmailTable
-              emails={displayEmails}
-              loading={displayLoading}
-              error={displayError}
-              type={activeTab}
-            />
           )}
+          <EmailTable
+            emails={displayEmails}
+            loading={displayLoading}
+            error={displayError}
+            type={displayType}
+            onEmailClick={handleEmailClick}
+          />
         </main>
       </div>
 

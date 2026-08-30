@@ -12,7 +12,7 @@ router.get("/api/emails/search", authenticate, async (req: Request, res: Respons
       return;
     }
 
-    const emails = await searchEmails(q);
+    const emails = await searchEmails(q, req.user!.userId);
     res.json({ success: true, query: q, emails });
   } catch (error) {
     console.error("[SearchController] Search error:", error);

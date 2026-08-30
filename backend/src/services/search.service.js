@@ -68,14 +68,21 @@ async function updateEmailStatus(emailId, status, sentAt, messageId) {
         console.error("[Elasticsearch] Update email status failed (non-fatal):", err instanceof Error ? err.message : err);
     }
 }
-async function searchEmails(query) {
+async function searchEmails(query, userId) {
     try {
         const result = await elasticsearch_1.client.search({
             index: INDEX_NAME,
             query: {
-                multi_match: {
-                    query,
-                    fields: ["recipient", "subject", "body"],
+                bool: {
+                    must: [
+                        {
+                            multi_match: {
+                                query,
+                                fields: ["recipient", "subject", "body"],
+                            },
+                        },
+                    ],
+                    filter: [{ term: { userId } }],
                 },
             },
         });

@@ -1,3 +1,9 @@
+export interface Sender {
+  id: string;
+  email: string;
+  smtpUser: string;
+}
+
 export interface Email {
   id: string;
   userId: string;
@@ -11,6 +17,7 @@ export interface Email {
   messageId: string | null;
   error: string | null;
   createdAt: string;
+  sender?: Sender;
 }
 
 export interface ScheduleEmailRequest {
@@ -32,6 +39,11 @@ export interface ScheduleEmailResponse {
 export interface EmailListResponse {
   success: boolean;
   emails: Email[];
+}
+
+export interface EmailDetailResponse {
+  success: boolean;
+  email: Email;
 }
 
 export interface SearchResponse {
