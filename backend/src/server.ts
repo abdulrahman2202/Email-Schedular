@@ -1,8 +1,11 @@
 import { app } from "./app";
+import adminRoutes from "./routes/admin.routes";
 import { prisma } from "./config/prisma";
 import { redis } from "./config/redis";
 import { ensureIndex } from "./services/search.service";
 import "./workers/email.worker";
+
+app.use(adminRoutes);
 
 const PORT = process.env.PORT || 5000;
 
