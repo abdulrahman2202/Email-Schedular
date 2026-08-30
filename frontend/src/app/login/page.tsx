@@ -1,8 +1,13 @@
 "use client";
 
+import { useState } from "react";
+
 const API_BASE = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000").replace(/\/+$/, "");
 
 export default function LoginPage() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
   const handleGoogleLogin = () => {
     window.location.href = `${API_BASE}/api/auth/google`;
   };
@@ -12,9 +17,10 @@ export default function LoginPage() {
       <div className="w-full max-w-[380px] border border-gray-200 rounded-2xl p-8">
         <h1 className="text-2xl font-bold text-gray-900 text-center mb-6">Login</h1>
 
+        {/* Google */}
         <button
           onClick={handleGoogleLogin}
-          className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg border border-gray-200 bg-gray-50 text-sm font-medium text-gray-700 hover:bg-gray-100 transition-colors cursor-pointer"
+          className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg border border-gray-200 bg-[#f0f0f0] text-sm font-medium text-gray-700 hover:bg-gray-200 transition-colors cursor-pointer mb-4"
         >
           <svg className="w-4 h-4" viewBox="0 0 24 24">
             <path
@@ -36,6 +42,39 @@ export default function LoginPage() {
           </svg>
           Login with Google
         </button>
+
+        {/* Divider */}
+        <div className="flex items-center gap-3 mb-4">
+          <div className="flex-1 h-px bg-gray-200" />
+          <span className="text-xs text-gray-400">or sign up through email</span>
+          <div className="flex-1 h-px bg-gray-200" />
+        </div>
+
+        {/* Email form (visual only — no backend auth) */}
+        <form onSubmit={(e) => e.preventDefault()}>
+          <input
+            type="email"
+            placeholder="Email ID"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="w-full px-4 py-2.5 rounded-lg bg-[#f0f0f0] text-sm placeholder:text-gray-400 mb-3 focus:outline-none focus:ring-2 focus:ring-[#10B981]/30"
+          />
+          <input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="w-full px-4 py-2.5 rounded-lg bg-[#f0f0f0] text-sm placeholder:text-gray-400 mb-4 focus:outline-none focus:ring-2 focus:ring-[#10B981]/30"
+          />
+          <button
+            type="submit"
+            disabled
+            className="w-full py-2.5 rounded-lg bg-[#10B981] text-white text-sm font-medium opacity-60 cursor-not-allowed"
+            title="Email login is not available. Please use Google."
+          >
+            Login
+          </button>
+        </form>
       </div>
     </div>
   );

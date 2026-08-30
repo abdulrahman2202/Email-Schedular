@@ -27,7 +27,7 @@ app.use((0, cors_1.default)({
 }));
 app.use((0, cookie_parser_1.default)());
 app.use(express_1.default.json());
-app.use(auth_routes_1.default);
+app.use("/api/auth", auth_routes_1.default);
 app.use(health_routes_1.default);
 app.use(email_routes_1.default);
 app.use(sender_routes_1.default);

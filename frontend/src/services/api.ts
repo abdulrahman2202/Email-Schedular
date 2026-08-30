@@ -30,55 +30,55 @@ export async function logout(): Promise<void> {
 }
 
 export async function getHealth() {
-  const { data } = await api.get<{ status: string; database: string }>("/health");
+  const { data } = await api.get<{ status: string; database: string }>("/api/health");
   return data;
 }
 
 // Emails
 export async function getScheduledEmails(): Promise<EmailListResponse> {
-  const { data } = await api.get<EmailListResponse>("/emails/scheduled");
+  const { data } = await api.get<EmailListResponse>("/api/emails/scheduled");
   return data;
 }
 
 export async function getSentEmails(): Promise<EmailListResponse> {
-  const { data } = await api.get<EmailListResponse>("/emails/sent");
+  const { data } = await api.get<EmailListResponse>("/api/emails/sent");
   return data;
 }
 
 export async function scheduleEmails(req: ScheduleEmailRequest): Promise<ScheduleEmailResponse> {
-  const { data } = await api.post<ScheduleEmailResponse>("/emails/schedule", req);
+  const { data } = await api.post<ScheduleEmailResponse>("/api/emails/schedule", req);
   return data;
 }
 
 export async function searchEmails(query: string): Promise<SearchResponse> {
-  const { data } = await api.get<SearchResponse>("/emails/search", { params: { q: query } });
+  const { data } = await api.get<SearchResponse>("/api/emails/search", { params: { q: query } });
   return data;
 }
 
 // Senders
 export async function getSenders(): Promise<SenderListResponse> {
-  const { data } = await api.get<SenderListResponse>("/senders");
+  const { data } = await api.get<SenderListResponse>("/api/senders");
   return data;
 }
 
 export async function createSender(req: CreateSenderRequest): Promise<CreateSenderResponse> {
-  const { data } = await api.post<CreateSenderResponse>("/senders", req);
+  const { data } = await api.post<CreateSenderResponse>("/api/senders", req);
   return data;
 }
 
 // Slack
 export async function getSlackStatus(): Promise<SlackStatus> {
-  const { data } = await api.get<SlackStatus>("/slack/status");
+  const { data } = await api.get<SlackStatus>("/api/slack/status");
   return data;
 }
 
 export async function disconnectSlack() {
-  const { data } = await api.post<{ success: boolean; message: string }>("/slack/disconnect");
+  const { data } = await api.post<{ success: boolean; message: string }>("/api/slack/disconnect");
   return data;
 }
 
 export function getSlackConnectUrl(): string {
-  return `${API_BASE}/slack/connect`;
+  return `${API_BASE}/api/slack/connect`;
 }
 
 export { api };
