@@ -2,8 +2,7 @@ import { Request, Response } from "express";
 import { z } from "zod";
 import { prisma } from "../config/prisma";
 import { scheduleEmails } from "../services/email.service";
-import { emailQueue } from "../queues/email.queue";
-import { ensureRedisConnection } from "../config/redis";
+import { createEmailQueue } from "../queues/email.queue";
 
 const scheduleSchema = z.object({
   senderId: z.string().trim().min(1, "senderId is required"),
@@ -149,9 +148,13 @@ export async function deleteEmail(req: Request<{ id: string }>, res: Response) {
     // Cancel the BullMQ job if scheduled (still delayed/waiting)
     if (email.status === "scheduled") {
       try {
-        await ensureRedisConnection();
-        const jobId = `email-${email.id}`;
-        await emailQueue.remove(jobId);
+        const queue = await createEmailQueue();
+        try {
+          const jobId = `email-${email.id}`;
+          await queue.remove(jobId);
+        } finally {
+          await queue.close();
+        }
       } catch (e) {
         // Job may already be completed or not found — that's fine
         console.log("[EmailController] Could not cancel BullMQ job (may already be processed):", (e as Error).message);
