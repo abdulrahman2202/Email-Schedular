@@ -89,6 +89,19 @@ export async function findOrCreateUser(googleUser: GoogleUserInfo) {
     });
   }
 
+  const senderCount = await prisma.sender.count({ where: { userId: user.id } });
+  if (senderCount === 0) {
+    await prisma.sender.create({
+      data: {
+        userId: user.id,
+        email: googleUser.email,
+        smtpUser: googleUser.email,
+        smtpPassword: "ethereal",
+      },
+    });
+    console.log(`[Auth] Auto-created default sender for user ${user.id}`);
+  }
+
   return user;
 }
 

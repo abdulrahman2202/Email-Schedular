@@ -5,7 +5,7 @@ import { ArrowLeft, Paperclip, Clock, Send } from "lucide-react";
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 import FileUpload from "./FileUpload";
-import { getSenders, scheduleEmails } from "@/services/api";
+import { getSenders, createSender, scheduleEmails } from "@/services/api";
 import { showToast } from "@/components/ui/Toast";
 import type { Sender } from "@/types/sender";
 
@@ -30,6 +30,9 @@ export default function ComposePage({ onBack, onScheduled }: ComposePageProps) {
   });
   const [submitting, setSubmitting] = useState(false);
   const [showSendLater, setShowSendLater] = useState(false);
+  const [showAddSender, setShowAddSender] = useState(false);
+  const [newSenderEmail, setNewSenderEmail] = useState("");
+  const [addingSender, setAddingSender] = useState(false);
 
   useEffect(() => {
     getSenders()
@@ -39,6 +42,24 @@ export default function ComposePage({ onBack, onScheduled }: ComposePageProps) {
       })
       .catch(() => {});
   }, []);
+
+  const handleAddSender = async () => {
+    const email = newSenderEmail.trim();
+    if (!email) return;
+    setAddingSender(true);
+    try {
+      const res = await createSender({ email, smtpUser: email, smtpPassword: "ethereal" });
+      setSenders((prev) => [res.sender, ...prev]);
+      setSenderId(res.sender.id);
+      setShowAddSender(false);
+      setNewSenderEmail("");
+      showToast("success", "Sender added");
+    } catch {
+      showToast("error", "Failed to add sender");
+    } finally {
+      setAddingSender(false);
+    }
+  };
 
   const addRecipient = (email: string) => {
     const trimmed = email.trim().toLowerCase();
@@ -154,17 +175,46 @@ export default function ComposePage({ onBack, onScheduled }: ComposePageProps) {
         {/* From */}
         <div className="flex items-center gap-3 mb-4">
           <span className="text-sm text-gray-500 w-12">From</span>
-          <select
-            value={senderId}
-            onChange={(e) => setSenderId(e.target.value)}
-            className="px-3 py-1.5 rounded-lg bg-gray-100 text-sm border-0 focus:outline-none focus:ring-2 focus:ring-[#10B981]/30 cursor-pointer"
-          >
-            {senders.map((s) => (
-              <option key={s.id} value={s.id}>
-                {s.email}
-              </option>
-            ))}
-          </select>
+          {senders.length > 0 ? (
+            <select
+              value={senderId}
+              onChange={(e) => setSenderId(e.target.value)}
+              className="px-3 py-1.5 rounded-lg bg-gray-100 text-sm border-0 focus:outline-none focus:ring-2 focus:ring-[#10B981]/30 cursor-pointer"
+            >
+              {senders.map((s) => (
+                <option key={s.id} value={s.id}>
+                  {s.email}
+                </option>
+              ))}
+            </select>
+          ) : showAddSender ? (
+            <div className="flex items-center gap-2">
+              <input
+                type="email"
+                placeholder="you@example.com"
+                value={newSenderEmail}
+                onChange={(e) => setNewSenderEmail(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleAddSender()}
+                className="px-3 py-1.5 rounded-lg bg-gray-50 border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#10B981]/30"
+              />
+              <Button size="sm" onClick={handleAddSender} disabled={addingSender}>
+                {addingSender ? "Adding..." : "Add"}
+              </Button>
+              <button onClick={() => setShowAddSender(false)} className="text-sm text-gray-500 hover:text-gray-700 cursor-pointer">
+                Cancel
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={() => {
+                setShowAddSender(true);
+                setNewSenderEmail("");
+              }}
+              className="text-sm text-[#10B981] hover:text-[#059669] font-medium cursor-pointer"
+            >
+              + Add Sender
+            </button>
+          )}
         </div>
 
         {/* To */}
