@@ -1,5 +1,6 @@
 import { prisma } from "../config/prisma";
 import { emailQueue } from "../queues/email.queue";
+import { ensureRedisConnection } from "../config/redis";
 import { indexEmail } from "./search.service";
 
 interface ScheduleEmailsInput {
@@ -14,6 +15,8 @@ interface ScheduleEmailsInput {
 
 export async function scheduleEmails(input: ScheduleEmailsInput) {
   const { userId, senderId, subject, body, recipients, startTime, delayBetweenEmails } = input;
+
+  await ensureRedisConnection();
 
   const emails = await prisma.$transaction(async (tx) => {
     const created = [];

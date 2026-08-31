@@ -13,4 +13,9 @@ redis.on("connect", () => {
   console.log("[Redis] Connected");
 });
 
-export { redis };
+async function ensureRedisConnection(): Promise<void> {
+  if (redis.status === "ready") return;
+  await redis.connect();
+}
+
+export { redis, ensureRedisConnection };

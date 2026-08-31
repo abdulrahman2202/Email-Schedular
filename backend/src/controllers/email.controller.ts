@@ -3,6 +3,7 @@ import { z } from "zod";
 import { prisma } from "../config/prisma";
 import { scheduleEmails } from "../services/email.service";
 import { emailQueue } from "../queues/email.queue";
+import { ensureRedisConnection } from "../config/redis";
 
 const scheduleSchema = z.object({
   senderId: z.string().trim().min(1, "senderId is required"),
@@ -148,6 +149,7 @@ export async function deleteEmail(req: Request<{ id: string }>, res: Response) {
     // Cancel the BullMQ job if scheduled (still delayed/waiting)
     if (email.status === "scheduled") {
       try {
+        await ensureRedisConnection();
         const jobId = `email-${email.id}`;
         await emailQueue.remove(jobId);
       } catch (e) {
