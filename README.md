@@ -1,6 +1,5 @@
-# ReachInbox — Full-Stack Email Scheduler
+# Full-Stack Email Scheduler
 
-**ReachInbox Software Development Intern Assignment**
 
 ---
 
