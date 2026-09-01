@@ -748,4 +748,4 @@ The project follows these engineering practices:
 
 **Abdul Rahman**
 
-Built for the ReachInbox Software Development Intern Assignment.
+
